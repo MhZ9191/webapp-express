@@ -18,7 +18,7 @@ function index(req, res) {
 function show(req, res) {
   const id = req.params.id;
   const sqlShowOneId =
-    "select m.title,m.genre,r.vote,r.name,r.movie_id,r.text from movies as m inner join reviews as r on m.id=r.movie_id where m.id=?";
+    "select * from movies as m inner join reviews as r on m.id=r.movie_id where r.movie_id=?";
 
   connect.query(sqlShowOneId, [id], (err, resultsShow) => {
     if (err)
@@ -28,12 +28,24 @@ function show(req, res) {
       });
 
     const buildObj = resultsShow.reduce((ac, ce) => {
-      const { title, genre, movie_id, name, vote, text } = ce;
+      const {
+        title,
+        genre,
+        abstract,
+        movie_id,
+        name,
+        vote,
+        text,
+        created_at,
+        image,
+      } = ce;
       ac.id = movie_id;
       ac.title = title;
       ac.genre = genre;
+      ac.abstract = abstract;
+      ac.image = createPathImage(image);
       ac.reviews = ac.reviews || [];
-      ac.reviews.push({ name, vote, text });
+      ac.reviews.push({ name, vote, text, created_at });
       return ac;
     }, {});
 
@@ -45,3 +57,7 @@ function show(req, res) {
 }
 
 module.exports = { index, show };
+
+function createPathImage(img) {
+  return `http://${process.env.DB_HOST}:${process.env.APP_PORT}/img/${img}`;
+}
