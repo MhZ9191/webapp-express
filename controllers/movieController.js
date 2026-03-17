@@ -8,9 +8,14 @@ function index(req, res) {
         success: false,
         error: "Internal server error",
       });
+
+    const resuUp = resultsIndex.map((el) => {
+      return { ...el, image: createPathImage(el.image) };
+    });
+
     res.json({
       success: true,
-      results: resultsIndex,
+      results: resuUp,
     });
   });
 }
