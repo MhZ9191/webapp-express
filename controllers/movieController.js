@@ -1,7 +1,7 @@
 const connect = require("../databases/connect");
 
 function index(req, res) {
-  const sqlAllMovies = "select * from movies";
+  const sqlAllMovies = "select title,genre,abstract,id,image from movies";
   connect.query(sqlAllMovies, (err, resultsIndex) => {
     if (err)
       return res.status(500).json({
@@ -43,6 +43,7 @@ function show(req, res) {
         text,
         created_at,
         image,
+        release_year,
       } = ce;
       ac.id = movie_id;
       ac.title = title;
@@ -50,6 +51,7 @@ function show(req, res) {
       ac.abstract = abstract;
       ac.image = createPathImage(image);
       ac.reviews = ac.reviews || [];
+      ac.release = release_year;
       ac.reviews.push({ name, vote, text, created_at });
       return ac;
     }, {});
@@ -61,7 +63,36 @@ function show(req, res) {
   });
 }
 
-module.exports = { index, show };
+function storeRev(req, res) {
+  const { id } = req.params;
+  const { name, vote, text } = req.body;
+
+  const sqlCreateRev =
+    "insert into reviews (movie_id,name,vote,text) values(?,?,?,?)";
+
+  connect.query(sqlCreateRev, [id, name, vote, text], (err, resultNew) => {
+    if (err)
+      return res.status(500).json({
+        success: false,
+        error: "Internal server error",
+      });
+
+    const obj = {
+      name,
+      vote,
+      text,
+      id_reviews: resultNew.insertId,
+    };
+
+    res.json({
+      success: true,
+      message: "Create new reviews!",
+      result: obj,
+    });
+  });
+}
+
+module.exports = { index, show, storeRev };
 
 function createPathImage(img) {
   return `http://${process.env.DB_HOST}:${process.env.APP_PORT}/img/${img}`;
