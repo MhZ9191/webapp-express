@@ -23,7 +23,7 @@ function index(req, res) {
 function show(req, res) {
   const id = req.params.id;
   const sqlShowOneId =
-    "select * from movies as m inner join reviews as r on m.id=r.movie_id where r.movie_id=?";
+    "select *,r.id from movies as m inner join reviews as r on m.id=r.movie_id where r.movie_id=?";
 
   connect.query(sqlShowOneId, [id], (err, resultsShow) => {
     if (err)
@@ -44,6 +44,7 @@ function show(req, res) {
         created_at,
         image,
         release_year,
+        rid = ce.id,
       } = ce;
       ac.id = movie_id;
       ac.title = title;
@@ -52,7 +53,7 @@ function show(req, res) {
       ac.image = createPathImage(image);
       ac.reviews = ac.reviews || [];
       ac.release = release_year;
-      ac.reviews.push({ name, vote, text, created_at });
+      ac.reviews.push({ name, vote, text, created_at, rid });
       return ac;
     }, {});
 
